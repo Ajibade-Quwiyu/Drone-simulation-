@@ -6,6 +6,12 @@ public class PlayerController : MonoBehaviour
 {
     Rigidbody Drone;
     Vector3 DronePosition;
+    public bool isShooting = false;
+    public Rigidbody fire;
+    public Transform fireEnd;
+    public Vector3 recoil;
+    Vector3 originalRotation;
+    public GameObject gunTank;
 
     public Transform Blade1;
     public Transform Blade2;
@@ -15,9 +21,9 @@ public class PlayerController : MonoBehaviour
     public Transform Blade6;
 
     public float turnSpeed;
-    public float Z_Axis;
-    public float Y_Axis;
-    public float X_Axis;
+    float Z_Axis;
+    float Y_Axis;
+    float X_Axis;
 
     public Transform tyre1;
     public Transform tyre2;
@@ -36,6 +42,29 @@ public class PlayerController : MonoBehaviour
     void Update()
     {
         LookAtMouse();
+        InputSystem();
+       
+    }
+
+    private void FixedUpdate()
+    {
+        float movespeed = 5;
+        Drone.MovePosition(transform.position + DronePosition * Time.fixedDeltaTime * movespeed);
+        ForceAdd(UpwardForce);
+        TyreRotate();
+        //Drone.AddRelativeForce(UpwardForce);
+    }
+    void ForceAdd(Vector3 Force)
+    {
+        Drone.AddForceAtPosition(Force, Blade1.position);
+        Drone.AddForceAtPosition(Force, Blade2.position);
+        Drone.AddForceAtPosition(Force, Blade3.position);
+        Drone.AddForceAtPosition(Force, Blade4.position);
+        Drone.AddForceAtPosition(Force, Blade5.position);
+        Drone.AddForceAtPosition(Force, Blade6.position);
+    }
+    void InputSystem()
+    {
         //move up
         if (Input.GetKey("o"))
         {
@@ -53,33 +82,28 @@ public class PlayerController : MonoBehaviour
             UpwardForce.y = 16.35f;
             Drone.drag = 10;
         }
-            
-
         Z_Axis = Input.GetAxis("Horizontal");
         X_Axis = Input.GetAxis("Vertical");
         DronePosition = new Vector3(-X_Axis, Y_Axis, Z_Axis);
+
+        if (Input.GetKeyDown(KeyCode.Mouse0) && isShooting)
+        {
+            Rigidbody fireInstance;
+            fireInstance = Instantiate(fire, fireEnd.position, fireEnd.rotation) as Rigidbody;
+            fireInstance.AddForce(fireEnd.forward * -3500);
+            AddRecoil();
+        }
+        else if(Input.GetKeyUp(KeyCode.Mouse0))
+        {
+            StopRecoil();
+        }
     }
-
-    private void FixedUpdate()
+    void TyreRotate()
     {
-        float movespeed = 5;
-        Drone.MovePosition(transform.position + DronePosition * Time.fixedDeltaTime * movespeed);
-        ForceAdd(UpwardForce);
-        //Drone.AddRelativeForce(UpwardForce);
-
         tyre1.transform.Rotate(turnSpeed, 0, 0);
         tyre2.transform.Rotate(turnSpeed, 0, 0);
         tyre3.transform.Rotate(turnSpeed, 0, 0);
         tyre4.transform.Rotate(turnSpeed, 0, 0);
-    }
-    void ForceAdd(Vector3 Force)
-    {
-        Drone.AddForceAtPosition(Force, Blade1.position);
-        Drone.AddForceAtPosition(Force, Blade2.position);
-        Drone.AddForceAtPosition(Force, Blade3.position);
-        Drone.AddForceAtPosition(Force, Blade4.position);
-        Drone.AddForceAtPosition(Force, Blade5.position);
-        Drone.AddForceAtPosition(Force, Blade6.position);
     }
     void LookAtMouse()
     {
@@ -90,9 +114,17 @@ public class PlayerController : MonoBehaviour
         if (playerPlane.Raycast(ray, out hitDist))
         {
             Vector3 targetPoint = ray.GetPoint(hitDist);
-            Quaternion targetRotation = Quaternion.LookRotation(targetPoint - transform.position);
+            Quaternion targetRotation = Quaternion.LookRotation(transform.position - targetPoint);
             transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, turnSpeed * Time.deltaTime);
         }
     }
-
+    private void AddRecoil()
+    {
+        gunTank.transform.localEulerAngles += recoil;
+    }
+    private void StopRecoil()
+    {
+        gunTank.transform.localEulerAngles = originalRotation;
+    }
+    
 }

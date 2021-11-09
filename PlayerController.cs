@@ -6,12 +6,16 @@ public class PlayerController : MonoBehaviour
 {
     Rigidbody Drone;
     Vector3 DronePosition;
-    public bool isShooting = false;
+    
     public Rigidbody fire;
     public Transform fireEnd;
     public Vector3 recoil;
+    public float recoilRate;
     Vector3 originalRotation;
     public GameObject gunTank;
+    public float bulletRate;
+    public AudioClip bulletSound;
+    public AudioSource AudioSource;
 
     public Transform Blade1;
     public Transform Blade2;
@@ -35,6 +39,8 @@ public class PlayerController : MonoBehaviour
     void Start()
     {
         Drone = GetComponent<Rigidbody>();
+        bulletSound = GetComponent<AudioClip>();
+        AudioSource = GetComponent<AudioSource>();
         DronePosition = transform.position;
     }
 
@@ -43,7 +49,6 @@ public class PlayerController : MonoBehaviour
     {
         LookAtMouse();
         InputSystem();
-       
     }
 
     private void FixedUpdate()
@@ -86,15 +91,18 @@ public class PlayerController : MonoBehaviour
         X_Axis = Input.GetAxis("Vertical");
         DronePosition = new Vector3(-X_Axis, Y_Axis, Z_Axis);
 
-        if (Input.GetKeyDown(KeyCode.Mouse0) && isShooting)
+        if (Input.GetKey(KeyCode.Mouse0) && fire != null)
         {
+            AddRecoil();
             Rigidbody fireInstance;
             fireInstance = Instantiate(fire, fireEnd.position, fireEnd.rotation) as Rigidbody;
-            fireInstance.AddForce(fireEnd.forward * -3500);
-            AddRecoil();
+            fireInstance.AddForce(fireEnd.forward * -bulletRate);
+            StartCoroutine(Coilstop());
+            AudioSource.PlayOneShot(bulletSound,1.0f);
         }
-        else if(Input.GetKeyUp(KeyCode.Mouse0))
+        IEnumerator Coilstop()
         {
+            yield return new WaitForSeconds(recoilRate);
             StopRecoil();
         }
     }

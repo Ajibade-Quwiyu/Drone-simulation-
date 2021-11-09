@@ -4,11 +4,18 @@ using UnityEngine;
 
 public class BulletController : MonoBehaviour
 {
+
     PlayerController playerControllerScript;
+    public float bulletRate;
+    public float recoilRate;
+    public Rigidbody fire;
+    public AudioClip bulletSound;
+    public GameObject bullet;
+ 
     // Start is called before the first frame update
     void Start()
     {
-        playerControllerScript = GetComponent<PlayerController>();
+        
     }
 
     // Update is called once per frame
@@ -28,12 +35,17 @@ public class BulletController : MonoBehaviour
             Destroy(gameObject);
         }
     }
-    private void OnCollisionEnter(Collision collision)
+    private void OnTriggerEnter(Collider other)
     {
-        if (collision.gameObject.CompareTag("Player"))
+        if (other.gameObject.CompareTag("Player"))
         {
-            playerControllerScript.isShooting = true;
-            gameObject.SetActive(false);
+            Debug.Log("collided");
+            playerControllerScript = other.gameObject.GetComponent<PlayerController>();
+            playerControllerScript.bulletSound = bulletSound;
+            playerControllerScript.bulletRate = bulletRate;
+            playerControllerScript.recoilRate = recoilRate;
+            playerControllerScript.fire = fire;
+            Destroy(gameObject);
             
         }
     }

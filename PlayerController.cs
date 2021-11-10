@@ -17,14 +17,21 @@ public class PlayerController : MonoBehaviour
     public AudioClip bulletSound;
     public AudioSource AudioSource;
 
+    public static int fireCount;
+
     public Transform Blade1;
     public Transform Blade2;
     public Transform Blade3;
     public Transform Blade4;
     public Transform Blade5;
     public Transform Blade6;
+    public Transform rBlade1;
+    public Transform rBlade2;
+    public Transform rBlade3;
+    public Transform rBlade4;
+    public Transform rBlade5;
+    public Transform rBlade6;
 
-    public float turnSpeed;
     float Z_Axis;
     float Y_Axis;
     float X_Axis;
@@ -56,7 +63,7 @@ public class PlayerController : MonoBehaviour
         float movespeed = 5;
         Drone.MovePosition(transform.position + DronePosition * Time.fixedDeltaTime * movespeed);
         ForceAdd(UpwardForce);
-        TyreRotate();
+        Rotate();
         //Drone.AddRelativeForce(UpwardForce);
     }
     void ForceAdd(Vector3 Force)
@@ -105,13 +112,21 @@ public class PlayerController : MonoBehaviour
             yield return new WaitForSeconds(recoilRate);
             StopRecoil();
         }
+        
     }
-    void TyreRotate()
+    void Rotate()
     {
-        tyre1.transform.Rotate(turnSpeed, 0, 0);
-        tyre2.transform.Rotate(turnSpeed, 0, 0);
-        tyre3.transform.Rotate(turnSpeed, 0, 0);
-        tyre4.transform.Rotate(turnSpeed, 0, 0);
+        tyre1.transform.Rotate(10, 0, 0);
+        tyre2.transform.Rotate(10, 0, 0);
+        tyre3.transform.Rotate(10, 0, 0);
+        tyre4.transform.Rotate(10, 0, 0);
+        rBlade1.transform.Rotate(0, 100, 0);
+        rBlade2.transform.Rotate(0, -100, 0);
+        rBlade3.transform.Rotate(0, 100, 0);
+        rBlade4.transform.Rotate(0, -100, 0);
+        rBlade5.transform.Rotate(0, 100, 0);
+        rBlade6.transform.Rotate(0, -100, 0);
+
     }
     void LookAtMouse()
     {
@@ -123,7 +138,7 @@ public class PlayerController : MonoBehaviour
         {
             Vector3 targetPoint = ray.GetPoint(hitDist);
             Quaternion targetRotation = Quaternion.LookRotation(transform.position - targetPoint);
-            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, turnSpeed * Time.deltaTime);
+            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, 2 * Time.deltaTime);
         }
     }
     private void AddRecoil()

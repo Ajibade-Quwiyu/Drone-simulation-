@@ -6,16 +6,19 @@ public class BulletController : MonoBehaviour
 {
 
     PlayerController playerControllerScript;
+    private UIManager _uiManager;
     public float bulletRate;
     public float recoilRate;
     public Rigidbody fire;
     public AudioClip bulletSound;
     public GameObject bullet;
+    public int maxAmmo;
+    public int fireCount;
  
     // Start is called before the first frame update
     void Start()
     {
-        
+        _uiManager = GameObject.Find("UI Manager").GetComponent<UIManager>();
     }
 
     // Update is called once per frame
@@ -45,8 +48,11 @@ public class BulletController : MonoBehaviour
             playerControllerScript.bulletRate = bulletRate;
             playerControllerScript.recoilRate = recoilRate;
             playerControllerScript.fire = fire;
+            playerControllerScript.fireCount = fireCount;
+            playerControllerScript.maxAmmo = maxAmmo;
             Destroy(gameObject);
-            
+            _uiManager.UpdateFireCount(playerControllerScript.fireCount);
+
         }
     }
 }

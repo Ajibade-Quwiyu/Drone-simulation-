@@ -5,13 +5,10 @@ using UnityEngine.UI;
 
 public class UIManager : MonoBehaviour
 {
-    public Text activeFireText;
-    private void Start()
+    [SerializeField] private Text _ammoText;
+    
+    public void UpdateFireCount(int count)
     {
-        activeFireText.text = "AMMO: " + 100;
-    }
-    public void UpdateFireCount()
-    {
-        activeFireText.text = "AMMO: " + PlayerController.fireCount;
+        _ammoText.text = "AMMO: " + count;
     }
 }

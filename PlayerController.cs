@@ -17,7 +17,9 @@ public class PlayerController : MonoBehaviour
     public AudioClip bulletSound;
     public AudioSource AudioSource;
 
-    public static int fireCount;
+    public int fireCount;
+    private UIManager _uiManager;
+    public int maxAmmo = 50;
 
     public Transform Blade1;
     public Transform Blade2;
@@ -49,6 +51,8 @@ public class PlayerController : MonoBehaviour
         bulletSound = GetComponent<AudioClip>();
         AudioSource = GetComponent<AudioSource>();
         DronePosition = transform.position;
+        fireCount = maxAmmo;
+        _uiManager = GameObject.Find("UI Manager").GetComponent<UIManager>();
     }
 
     // Update is called once per frame
@@ -97,11 +101,13 @@ public class PlayerController : MonoBehaviour
         Z_Axis = Input.GetAxis("Horizontal");
         X_Axis = Input.GetAxis("Vertical");
         DronePosition = new Vector3(-X_Axis, Y_Axis, Z_Axis);
-
+        
         if (Input.GetKey(KeyCode.Mouse0) && fire != null)
         {
             AddRecoil();
             Rigidbody fireInstance;
+            fireCount--;
+            maxAmmo -= fireCount;
             fireInstance = Instantiate(fire, fireEnd.position, fireEnd.rotation) as Rigidbody;
             fireInstance.AddForce(fireEnd.forward * -bulletRate);
             StartCoroutine(Coilstop());
@@ -149,5 +155,4 @@ public class PlayerController : MonoBehaviour
     {
         gunTank.transform.localEulerAngles = originalRotation;
     }
-    
 }

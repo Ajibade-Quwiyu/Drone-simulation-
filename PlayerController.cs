@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
+    protected Joystick moveJoystick;
+
     Rigidbody Drone;
     Vector3 DronePosition;
     
@@ -53,13 +55,15 @@ public class PlayerController : MonoBehaviour
         DronePosition = transform.position;
         fireCount = maxAmmo;
         _uiManager = GameObject.Find("UI Manager").GetComponent<UIManager>();
+        moveJoystick = FindObjectOfType<Joystick>();
     }
 
     // Update is called once per frame
     void Update()
     {
-        LookAtMouse();
-        InputSystem();
+        // LookAtMouse();
+        //  InputSystemForPc();
+        DronePosition = new Vector3(moveJoystick.Vertical * -2, Y_Axis, moveJoystick.Horizontal * 2);
     }
 
     private void FixedUpdate()
@@ -79,7 +83,7 @@ public class PlayerController : MonoBehaviour
         Drone.AddForceAtPosition(Force, Blade5.position);
         Drone.AddForceAtPosition(Force, Blade6.position);
     }
-    void InputSystem()
+    void InputSystemForPc()
     {
         //move up
         if (Input.GetKey("o"))
@@ -101,7 +105,7 @@ public class PlayerController : MonoBehaviour
         Z_Axis = Input.GetAxis("Horizontal");
         X_Axis = Input.GetAxis("Vertical");
         DronePosition = new Vector3(-X_Axis, Y_Axis, Z_Axis);
-        
+
         if (Input.GetKey(KeyCode.Mouse0) && fire != null)
         {
             AddRecoil();
@@ -117,8 +121,26 @@ public class PlayerController : MonoBehaviour
         {
             yield return new WaitForSeconds(recoilRate);
             StopRecoil();
-        }
-        
+        }    
+    }
+    public void MobileInputSystem()
+    {
+            if(fire != null)
+            {
+                AddRecoil();
+                Rigidbody fireInstance;
+                fireCount--;
+                maxAmmo -= fireCount;
+                fireInstance = Instantiate(fire, fireEnd.position, fireEnd.rotation) as Rigidbody;
+                fireInstance.AddForce(fireEnd.forward * -bulletRate);
+                StartCoroutine(Coilstop());
+                AudioSource.PlayOneShot(bulletSound, 1.0f);
+            }
+            IEnumerator Coilstop()
+            {
+                yield return new WaitForSeconds(recoilRate);
+                StopRecoil();
+            }
     }
     void Rotate()
     {

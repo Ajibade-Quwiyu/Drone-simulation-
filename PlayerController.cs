@@ -6,8 +6,12 @@ public class PlayerController : MonoBehaviour
 {
     protected Joystick moveJoystick;
 
+    private bool isFiring;
+    public bool isFlying = false;
+
     Rigidbody Drone;
     Vector3 DronePosition;
+    Quaternion DroneRotation;
     
     public Rigidbody fire;
     public Transform fireEnd;
@@ -22,6 +26,7 @@ public class PlayerController : MonoBehaviour
     public int fireCount;
     private UIManager _uiManager;
     public int maxAmmo = 50;
+    public int currentAmmo;
 
     public Transform Blade1;
     public Transform Blade2;
@@ -45,6 +50,7 @@ public class PlayerController : MonoBehaviour
     public Transform tyre3;
     public Transform tyre4;
     public Vector3 UpwardForce = Vector3.zero;
+    public float tiltAngle;
 
     // Start is called before the first frame update
     void Start()
@@ -63,13 +69,14 @@ public class PlayerController : MonoBehaviour
     {
         // LookAtMouse();
         //  InputSystemForPc();
-        DronePosition = new Vector3(moveJoystick.Vertical * -2, Y_Axis, moveJoystick.Horizontal * 2);
+        InputSystemForMobile();
     }
 
     private void FixedUpdate()
     {
         float movespeed = 5;
         Drone.MovePosition(transform.position + DronePosition * Time.fixedDeltaTime * movespeed);
+        //Drone.MoveRotation(DroneRotation);
         ForceAdd(UpwardForce);
         Rotate();
         //Drone.AddRelativeForce(UpwardForce);
@@ -123,25 +130,7 @@ public class PlayerController : MonoBehaviour
             StopRecoil();
         }    
     }
-    public void MobileInputSystem()
-    {
-            if(fire != null)
-            {
-                AddRecoil();
-                Rigidbody fireInstance;
-                fireCount--;
-                maxAmmo -= fireCount;
-                fireInstance = Instantiate(fire, fireEnd.position, fireEnd.rotation) as Rigidbody;
-                fireInstance.AddForce(fireEnd.forward * -bulletRate);
-                StartCoroutine(Coilstop());
-                AudioSource.PlayOneShot(bulletSound, 1.0f);
-            }
-            IEnumerator Coilstop()
-            {
-                yield return new WaitForSeconds(recoilRate);
-                StopRecoil();
-            }
-    }
+    
     void Rotate()
     {
         tyre1.transform.Rotate(10, 0, 0);
@@ -177,4 +166,66 @@ public class PlayerController : MonoBehaviour
     {
         gunTank.transform.localEulerAngles = originalRotation;
     }
+    // PC inputs stops here .......All the codes below are for Mobile input
+    void InputSystemForMobile()
+    {
+       // DroneRotation = Quaternion.Euler(0,(moveJoystick.Horizontal), 0);
+        DronePosition = new Vector3(moveJoystick.Vertical * -2, Y_Axis, moveJoystick.Horizontal * 2);
+        
+        if (isFlying==false)
+        {
+            UpwardForce.y = 16.35f;
+            Drone.drag = 10;
+        }
+        
+       // transform.rotation = Quaternion.Euler(0, moveJoystick.Horizontal * 2, 0);
+    }
+    public void Firing()
+    {
+        isFiring = true;
+        if (fire != null && isFiring == true)
+        {
+            AddRecoil();
+            Rigidbody fireInstance;
+           // fireCount--;
+            //currentAmmo = maxAmmo;
+            currentAmmo -= fireCount;
+            fireInstance = Instantiate(fire, fireEnd.position, fireEnd.rotation) as Rigidbody;
+            fireInstance.AddForce(fireEnd.forward * -bulletRate);
+            StartCoroutine(Coilstop());
+            AudioSource.PlayOneShot(bulletSound, 1.0f);
+        }
+        IEnumerator Coilstop()
+        {
+            yield return new WaitForSeconds(recoilRate);
+            StopRecoil();
+        }
+    }
+    public void NotFiring()
+    {
+        isFiring = false;
+    }
+    public void MoveUpOn()
+    {
+        isFlying = true;
+        Drone.drag = 0.5f;
+        UpwardForce.y += 0.1f*5;
+        Debug.Log(DronePosition);
+    }
+    public void MoveUpOff()
+    {
+        isFlying = false;
+    }
+    public void MoveDownOn()
+    {
+        isFlying = true;
+        Drone.drag = 0.5f;
+        UpwardForce.y -= 0.1f*5;
+        Debug.Log(DronePosition);
+    }
+    public void MoveDownOff()
+    {
+        isFlying = false;
+    }
+
 }

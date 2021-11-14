@@ -14,6 +14,7 @@ public class BulletController : MonoBehaviour
     public GameObject bullet;
     public int maxAmmo;
     public int fireCount;
+   
  
     // Start is called before the first frame update
     void Start()
@@ -24,19 +25,7 @@ public class BulletController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (transform.position.x < -10)
-        {
-            Destroy(gameObject);
-        }if (transform.position.x > 10)
-        {
-            Destroy(gameObject);
-        }if (transform.position.z > 10)
-        {
-            Destroy(gameObject);
-        }if (transform.position.z < -10)
-        {
-            Destroy(gameObject);
-        }
+        
     }
     private void OnTriggerEnter(Collider other)
     {
@@ -49,7 +38,10 @@ public class BulletController : MonoBehaviour
             playerControllerScript.recoilRate = recoilRate;
             playerControllerScript.fire = fire;
             playerControllerScript.fireCount = fireCount;
-            playerControllerScript.maxAmmo = maxAmmo;
+          // playerControllerScript.maxAmmo = maxAmmo;
+            playerControllerScript.currentAmmo = maxAmmo;
+
+           
             Destroy(gameObject);
             _uiManager.UpdateFireCount(playerControllerScript.fireCount);
 

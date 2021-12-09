@@ -13,6 +13,13 @@ public class FireController : MonoBehaviour
     
     void Destroyer()
     {
-        Destroy(this.gameObject,1);
+        Destroy(this.gameObject,10);
+    }
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.gameObject.CompareTag("Enemy"))
+        {
+            Destroy(other.gameObject,3);
+        }
     }
 }

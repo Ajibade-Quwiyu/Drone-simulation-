@@ -11,7 +11,7 @@ public class PlayerController : MonoBehaviour
 
     Rigidbody Drone;
     Vector3 DronePosition;
-    Quaternion DroneRotation;
+    Vector3 DroneRotation;
     
     public Rigidbody fire;
     public Transform fireEnd;
@@ -32,14 +32,12 @@ public class PlayerController : MonoBehaviour
     public Transform Blade2;
     public Transform Blade3;
     public Transform Blade4;
-    public Transform Blade5;
-    public Transform Blade6;
+   
     public Transform rBlade1;
     public Transform rBlade2;
     public Transform rBlade3;
     public Transform rBlade4;
-    public Transform rBlade5;
-    public Transform rBlade6;
+   
 
     float Z_Axis;
     float Y_Axis;
@@ -52,6 +50,11 @@ public class PlayerController : MonoBehaviour
     public Vector3 UpwardForce = Vector3.zero;
     public float tiltAngle;
 
+    [Header("Drone Movement Properties")]
+    [SerializeField] private float moveSpeed = 5;
+    [SerializeField] private float rotateSpeed = 40;
+    [SerializeField] private float flySpeed = 40;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -59,7 +62,7 @@ public class PlayerController : MonoBehaviour
         bulletSound = GetComponent<AudioClip>();
         AudioSource = GetComponent<AudioSource>();
         DronePosition = transform.position;
-        fireCount = maxAmmo;
+        currentAmmo = maxAmmo;
         _uiManager = GameObject.Find("UI Manager").GetComponent<UIManager>();
         moveJoystick = FindObjectOfType<Joystick>();
     }
@@ -74,11 +77,10 @@ public class PlayerController : MonoBehaviour
 
     private void FixedUpdate()
     {
-        float movespeed = 5;
-        Drone.MovePosition(transform.position + DronePosition * Time.fixedDeltaTime * movespeed);
-        //Drone.MoveRotation(DroneRotation);
-        ForceAdd(UpwardForce);
+        Drone.velocity = DronePosition * moveSpeed;
         Rotate();
+
+        ForceAdd(UpwardForce);
         //Drone.AddRelativeForce(UpwardForce);
     }
     void ForceAdd(Vector3 Force)
@@ -87,8 +89,7 @@ public class PlayerController : MonoBehaviour
         Drone.AddForceAtPosition(Force, Blade2.position);
         Drone.AddForceAtPosition(Force, Blade3.position);
         Drone.AddForceAtPosition(Force, Blade4.position);
-        Drone.AddForceAtPosition(Force, Blade5.position);
-        Drone.AddForceAtPosition(Force, Blade6.position);
+       
     }
     void InputSystemForPc()
     {
@@ -141,8 +142,7 @@ public class PlayerController : MonoBehaviour
         rBlade2.transform.Rotate(0, -100, 0);
         rBlade3.transform.Rotate(0, 100, 0);
         rBlade4.transform.Rotate(0, -100, 0);
-        rBlade5.transform.Rotate(0, 100, 0);
-        rBlade6.transform.Rotate(0, -100, 0);
+       
 
     }
     void LookAtMouse()
@@ -169,16 +169,23 @@ public class PlayerController : MonoBehaviour
     // PC inputs stops here .......All the codes below are for Mobile input
     void InputSystemForMobile()
     {
-       // DroneRotation = Quaternion.Euler(0,(moveJoystick.Horizontal), 0);
-        DronePosition = new Vector3(moveJoystick.Vertical * -2, Y_Axis, moveJoystick.Horizontal * 2);
-        
-        if (isFlying==false)
+        DroneRotation = new Vector3(0, Mathf.Atan2(moveJoystick.Horizontal, moveJoystick.Vertical) * 180 / Mathf.PI, 0);
+
+        if (!isFlying)
         {
-            UpwardForce.y = 16.35f;
+            UpwardForce.y = 24.525f;
             Drone.drag = 10;
         }
-        
-       // transform.rotation = Quaternion.Euler(0, moveJoystick.Horizontal * 2, 0);
+
+        if (moveJoystick.Horizontal != 0 || moveJoystick.Vertical != 0)
+        {
+            DronePosition = transform.forward;
+            transform.rotation = Quaternion.Slerp(transform.rotation,Quaternion.Euler(DroneRotation), Time.deltaTime * rotateSpeed);
+        }
+        else
+        {
+            DronePosition = Vector3.zero;
+        }
     }
     public void Firing()
     {
@@ -187,13 +194,14 @@ public class PlayerController : MonoBehaviour
         {
             AddRecoil();
             Rigidbody fireInstance;
-           // fireCount--;
-            //currentAmmo = maxAmmo;
+          
             currentAmmo -= fireCount;
             fireInstance = Instantiate(fire, fireEnd.position, fireEnd.rotation) as Rigidbody;
-            fireInstance.AddForce(fireEnd.forward * -bulletRate);
+            fireInstance.AddForce(fireEnd.forward * bulletRate);
             StartCoroutine(Coilstop());
             AudioSource.PlayOneShot(bulletSound, 1.0f);
+
+            _uiManager.UpdateFireCount(currentAmmo,maxAmmo);
         }
         IEnumerator Coilstop()
         {
@@ -209,8 +217,7 @@ public class PlayerController : MonoBehaviour
     {
         isFlying = true;
         Drone.drag = 0.5f;
-        UpwardForce.y += 0.1f*5;
-        Debug.Log(DronePosition);
+        UpwardForce.y += 0.1f* flySpeed;
     }
     public void MoveUpOff()
     {
@@ -220,8 +227,8 @@ public class PlayerController : MonoBehaviour
     {
         isFlying = true;
         Drone.drag = 0.5f;
-        UpwardForce.y -= 0.1f*5;
-        Debug.Log(DronePosition);
+        UpwardForce.y -= 0.1f* flySpeed;
+        
     }
     public void MoveDownOff()
     {
